@@ -7,6 +7,7 @@ require_once __DIR__ . '/../app/Controllers/SalesController.php';
 class Router {
     public function resolve() {
         $url = isset($_GET['url']) ? $_GET['url'] : 'dashboard';
+        
         $routes = [
             'dashboard'         => ['FleetController', 'dashboard'],
             'vehicules_liste'   => ['FleetController', 'vehicules_liste'],
@@ -15,7 +16,9 @@ class Router {
             'upload_marketing'  => ['FleetController', 'upload_marketing'],
             'clients_liste'     => ['ClientsController', 'clients_liste'],
             'workshop_index'    => ['WorkshopController', 'index'],
-            'sales_index'       => ['SalesController', 'index']
+            'sales_index'       => ['SalesController', 'index'],
+            // Ajout de la route manquante ci-dessous :
+            'sales_reserve'     => ['SalesController', 'sales_reserve']
         ];
 
         if (array_key_exists($url, $routes)) {
@@ -23,7 +26,7 @@ class Router {
             $method = $routes[$url][1];
             (new $class())->$method();
         } else {
-            echo "Erreur 404 : Page introuvable.";
+            echo "Erreur 404 : Page introuvable pour l'URL : " . htmlspecialchars($url);
         }
     }
 }

@@ -1,17 +1,30 @@
 <?php
 class BaseController {
-    protected function db() { return Database::getConnection(); }
+    protected function db() {
+        return new PDO('mysql:host=localhost;dbname=erp_auto', 'root', '');
+    }
 
-    protected function view($path, $data = []) {
-        extract($data); // <--- C'est cette ligne qui transforme ['total' => 10] en variable $total
-        $file = __DIR__ . '/../../resources/views/' . $path . '.php';
-        $layout = __DIR__ . '/../../resources/views/layouts/app.php';
+    protected function view($view, $data = []) {
+        extract($data);
         
-        if (file_exists($file)) {
-            ob_start();
-            include $file;
-            $content = ob_get_clean();
-            include $layout;
+        $basePath = "/root/auto_mvc/resources/views/";
+        $viewPath = $basePath . $view . ".php";
+        
+        // CORRECTION ICI : Pointage vers le nouveau dossier 'layouts'
+        $layoutPath = $basePath . "layouts/app.php";
+
+        ob_start();
+        if (file_exists($viewPath)) {
+            require $viewPath;
+        } else {
+            die("Erreur : Fichier vue introuvable à $viewPath");
+        }
+        $content = ob_get_clean();
+        
+        if (file_exists($layoutPath)) {
+            require $layoutPath;
+        } else {
+            die("Erreur : Layout introuvable à $layoutPath");
         }
     }
 }

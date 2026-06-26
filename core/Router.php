@@ -3,6 +3,7 @@ require_once __DIR__ . '/../app/Controllers/FleetController.php';
 require_once __DIR__ . '/../app/Controllers/ClientsController.php';
 require_once __DIR__ . '/../app/Controllers/WorkshopController.php';
 require_once __DIR__ . '/../app/Controllers/SalesController.php';
+require_once __DIR__ . '/../app/Controllers/ReportController.php';
 
 class Router {
     public function resolve() {
@@ -17,8 +18,8 @@ class Router {
             'clients_liste'     => ['ClientsController', 'clients_liste'],
             'workshop_index'    => ['WorkshopController', 'index'],
             'sales_index'       => ['SalesController', 'index'],
-            // Ajout de la route manquante ci-dessous :
-            'sales_reserve'     => ['SalesController', 'sales_reserve']
+            'sales_reserve'     => ['SalesController', 'sales_reserve'],
+            'reports_index'     => ['ReportController', 'index']
         ];
 
         if (array_key_exists($url, $routes)) {

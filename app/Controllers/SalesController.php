@@ -2,8 +2,6 @@
 require_once 'BaseController.php';
 
 class SalesController extends BaseController {
-    
-    // Affichage de la recherche de véhicules disponibles
     public function index() {
         $db = $this->db();
         $date_debut = $_GET['date_debut'] ?? null;
@@ -11,8 +9,11 @@ class SalesController extends BaseController {
         $vehicules = [];
 
         if ($date_debut && $date_fin) {
-            $sql = "SELECT * FROM vehicules WHERE id NOT IN (
-                        SELECT vehicule_id FROM transactions 
+            // Filtrage : On exclut les vendus et ceux déjà loués sur la période
+            $sql = "SELECT * FROM vehicules 
+                    WHERE statut != 'Vendu' 
+                    AND id NOT IN (
+                        SELECT vehicule_id FROM transactions
                         WHERE type = 'Location' AND (date_debut <= ? AND date_fin >= ?)
                     )";
             $stmt = $db->prepare($sql);
@@ -22,7 +23,6 @@ class SalesController extends BaseController {
         $this->view('sales/index', ['vehicules' => $vehicules, 'debut' => $date_debut, 'fin' => $date_fin]);
     }
 
-    // Traitement du formulaire et affichage
     public function sales_reserve() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $db = $this->db();
@@ -33,14 +33,15 @@ class SalesController extends BaseController {
             if ($v) {
                 $sql = "INSERT INTO transactions (vehicule_id, type, date_debut, date_fin, montant, client_nom) VALUES (?, ?, ?, ?, ?, ?)";
                 $db->prepare($sql)->execute([
-                    $v['id'], 
-                    $_POST['type'], 
-                    !empty($_POST['date_debut']) ? $_POST['date_debut'] : null, 
-                    !empty($_POST['date_fin']) ? $_POST['date_fin'] : null, 
-                    $_POST['montant'], 
+                    $v['id'],
+                    $_POST['type'],
+                    !empty($_POST['date_debut']) ? $_POST['date_debut'] : null,
+                    !empty($_POST['date_fin']) ? $_POST['date_fin'] : null,
+                    $_POST['montant'],
                     $_POST['client_nom']
                 ]);
-                
+
+                // Mise à jour automatique du statut
                 $statut = ($_POST['type'] === 'Vente') ? 'Vendu' : 'Loué';
                 $db->prepare("UPDATE vehicules SET statut = ? WHERE id = ?")->execute([$statut, $v['id']]);
             }
@@ -48,7 +49,6 @@ class SalesController extends BaseController {
             exit;
         }
 
-        // Passage du type (Location/Vente) à la vue pour adapter le formulaire
         $this->view('sales/formulaire_transaction', [
             'immat' => $_GET['immat'] ?? '',
             'type_initial' => $_GET['type'] ?? 'Location'

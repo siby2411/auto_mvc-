@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AUTO PRO ERP</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
     <style>
         .sidebar { background: #2c3e50; min-height: 100vh; color: #fff; }
         .nav-link { color: #bdc3c7 !important; padding: 12px; }
         .nav-link:hover { color: #fff !important; background: #34495e; }
-        
+
         /* Style de la bannière */
         .banner-pro {
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
@@ -47,10 +47,11 @@
             <li class="nav-item"><a class="nav-link" href="?url=sales_index">💰 Ventes / Loc</a></li>
             <li class="nav-item"><a class="nav-link" href="?url=workshop_index">🛠️ Atelier</a></li>
             <li class="nav-item"><a class="nav-link" href="?url=reports_index">📈 États Financiers</a></li>
+            <li class="nav-item"><a class="nav-link" href="?url=retours_previsibles">🗓️ Retours Prévus</a></li>
             <li class="nav-item mt-4"><a class="nav-link btn btn-primary text-white" href="?url=vehicules_create">+ Ajouter Véhicule</a></li>
         </ul>
     </nav>
-    
+
     <main class="flex-grow-1">
         <header class="banner-pro shadow">
             <div class="banner-content">
@@ -58,7 +59,7 @@
                 <p>Systèmes Intelligents de Gestion Automobile | AUTO PRO v1.0</p>
             </div>
         </header>
-        
+
         <div class="p-4">
             <?php echo $content; ?>
         </div>

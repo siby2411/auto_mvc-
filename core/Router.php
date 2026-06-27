@@ -8,10 +8,11 @@ require_once __DIR__ . '/../app/Controllers/ReportController.php';
 class Router {
     public function resolve() {
         $url = isset($_GET['url']) ? $_GET['url'] : 'dashboard';
-        
+
         $routes = [
             'dashboard'         => ['FleetController', 'dashboard'],
             'vehicules_liste'   => ['FleetController', 'vehicules_liste'],
+            'vehicules_profil'  => ['FleetController', 'vehicules_profil'],
             'vehicules_create'  => ['FleetController', 'vehicules_create'],
             'vehicules_store'   => ['FleetController', 'vehicules_store'],
             'upload_marketing'  => ['FleetController', 'upload_marketing'],
@@ -27,6 +28,7 @@ class Router {
             $method = $routes[$url][1];
             (new $class())->$method();
         } else {
+            http_response_code(404);
             echo "Erreur 404 : Page introuvable pour l'URL : " . htmlspecialchars($url);
         }
     }

@@ -6,10 +6,11 @@ class FleetController extends BaseController {
     
     public function dashboard() {
         $db = $this->db();
+        // Pointage vers le fichier existant dans le dossier 'parc'
         $this->view('parc/dashboard', [
             'total' => $db->query("SELECT COUNT(*) FROM vehicules")->fetchColumn(),
             'enMaintenance' => $db->query("SELECT COUNT(*) FROM vehicules WHERE statut = 'En maintenance'")->fetchColumn(),
-            'benefice' => $db->query("SELECT SUM(montant) FROM ventes")->fetchColumn() ?: 0
+            'benefice' => $db->query("SELECT SUM(montant) FROM transactions")->fetchColumn() ?: 0
         ]);
     }
 
@@ -28,7 +29,6 @@ class FleetController extends BaseController {
             $sql = "INSERT INTO vehicules (immatriculation, marque, modele, statut) VALUES (?, ?, ?, 'Disponible')";
             $stmt = $db->prepare($sql);
             $stmt->execute([$_POST['immatriculation'], $_POST['marque'], $_POST['modele']]);
-            
             $vehicule_id = $db->lastInsertId();
 
             if ($vehicule_id > 0 && !empty($_FILES['galerie']['name'][0])) {
@@ -36,32 +36,24 @@ class FleetController extends BaseController {
                     if ($_FILES['galerie']['error'][$key] === UPLOAD_ERR_OK) {
                         $path = ImageHelper::upload(['name' => $_FILES['galerie']['name'][$key], 'tmp_name' => $tmpName]);
                         if ($path) {
-                            $db->prepare("INSERT INTO images (vehicule_id, chemin) VALUES (?, ?)")
-                               ->execute([$vehicule_id, $path]);
+                            $db->prepare("INSERT INTO images (vehicule_id, chemin) VALUES (?, ?)")->execute([$vehicule_id, $path]);
                         }
                     }
                 }
             }
             header('Location: ?url=vehicules_liste');
-        } catch (PDOException $e) {
-            die("Erreur base de données : " . $e->getMessage());
-        }
+        } catch (PDOException $e) { die("Erreur : " . $e->getMessage()); }
         exit;
     }
 
     public function upload_marketing() {
-        $db = $this->db();
-        for ($i = 1; $i <= 4; $i++) {
-            $fieldName = "angle_" . $i;
-            if (!empty($_FILES[$fieldName]['name'])) {
-                $path = ImageHelper::upload($_FILES[$fieldName]);
-                if ($path) {
-                    $db->prepare("INSERT INTO marketing_images (angle, chemin) VALUES (?, ?)")
-                         ->execute([$i, $path]);
-                }
-            }
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['image'])) {
+            $uploadDir = 'public/uploads/';
+            if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+            $fileName = time() . '_' . basename($_FILES['image']['name']);
+            move_uploaded_file($_FILES['image']['tmp_name'], $uploadDir . $fileName);
+            header('Location: ?url=dashboard');
         }
-        header('Location: ?url=dashboard');
         exit;
     }
 }

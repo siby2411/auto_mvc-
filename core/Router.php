@@ -10,17 +10,19 @@ class Router {
         $url = isset($_GET['url']) ? $_GET['url'] : 'dashboard';
 
         $routes = [
-            'dashboard'         => ['FleetController', 'dashboard'],
-            'vehicules_liste'   => ['FleetController', 'vehicules_liste'],
-            'vehicules_profil'  => ['FleetController', 'vehicules_profil'],
-            'vehicules_create'  => ['FleetController', 'vehicules_create'],
-            'vehicules_store'   => ['FleetController', 'vehicules_store'],
-            'upload_marketing'  => ['FleetController', 'upload_marketing'],
-            'clients_liste'     => ['ClientsController', 'clients_liste'],
-            'workshop_index'    => ['WorkshopController', 'index'],
-            'sales_index'       => ['SalesController', 'index'],
-            'sales_reserve'     => ['SalesController', 'sales_reserve'],
-            'reports_index'     => ['ReportController', 'index']
+            'dashboard'           => ['FleetController', 'dashboard'],
+            'vehicules_liste'     => ['FleetController', 'vehicules_liste'],
+            'vehicules_profil'    => ['FleetController', 'vehicules_profil'],
+            'vehicules_create'    => ['FleetController', 'vehicules_create'],
+            'vehicules_store'     => ['FleetController', 'vehicules_store'],
+            'clients_liste'       => ['ClientsController', 'clients_liste'],
+            'clients_create'      => ['ClientsController', 'clients_create'],
+            'clients_store'       => ['ClientsController', 'clients_store'],
+            'workshop_index'      => ['WorkshopController', 'index'],
+            'sales_index'         => ['SalesController', 'index'],
+            'sales_reserve'       => ['SalesController', 'sales_reserve'],
+            'reports_index'       => ['ReportController', 'index'],
+            'retours_previsibles' => ['SalesController', 'retours_previsibles']
         ];
 
         if (array_key_exists($url, $routes)) {

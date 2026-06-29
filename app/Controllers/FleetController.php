@@ -1,6 +1,5 @@
 <?php
 require_once 'BaseController.php';
-require_once __DIR__ . '/../../core/ImageHelper.php';
 
 class FleetController extends BaseController {
 
@@ -18,25 +17,20 @@ class FleetController extends BaseController {
     public function vehicules_liste() {
         $db = $this->db();
         $vehicules = $db->query("SELECT * FROM vehicules")->fetchAll();
-        // On récupère aussi les images pour chaque véhicule pour éviter l'appel DB dans la vue
         $this->view('parc/liste', ['vehicules' => $vehicules]);
     }
 
     public function vehicules_profil() {
         $id = $_GET['id'] ?? null;
         if (!$id) { header('Location: ?url=vehicules_liste'); exit; }
-        
+
         $db = $this->db();
         $stmt = $db->prepare("SELECT * FROM vehicules WHERE id = ?");
         $stmt->execute([$id]);
         $v = $stmt->fetch();
-        
+
         if (!$v) { die("Véhicule introuvable."); }
-        
-        $imgs = $db->prepare("SELECT chemin FROM images WHERE vehicule_id = ?");
-        $imgs->execute([$id]);
-        
-        $this->view('parc/profil', ['v' => $v, 'images' => $imgs->fetchAll()]);
+        $this->view('parc/profil', ['v' => $v]);
     }
 
     public function vehicules_create() { $this->view('parc/create'); }
@@ -44,22 +38,37 @@ class FleetController extends BaseController {
     public function vehicules_store() {
         $db = $this->db();
         try {
-            $stmt = $db->prepare("INSERT INTO vehicules (immatriculation, marque, modele, statut) VALUES (?, ?, ?, 'Disponible')");
-            $stmt->execute([$_POST['immatriculation'], $_POST['marque'], $_POST['modele']]);
-            $vehicule_id = $db->lastInsertId();
-
-            if ($vehicule_id > 0 && !empty($_FILES['galerie']['name'][0])) {
-                foreach ($_FILES['galerie']['tmp_name'] as $key => $tmpName) {
-                    if ($_FILES['galerie']['error'][$key] === UPLOAD_ERR_OK) {
-                        $path = ImageHelper::upload(['name' => $_FILES['galerie']['name'][$key], 'tmp_name' => $tmpName]);
-                        if ($path) {
-                            $db->prepare("INSERT INTO images (vehicule_id, chemin) VALUES (?, ?)")->execute([$vehicule_id, $path]);
-                        }
-                    }
+            // 1. Préparation de la requête avec la nouvelle colonne photo_path
+            $stmt = $db->prepare("INSERT INTO vehicules (immatriculation, marque, modele, statut, photo_path) VALUES (?, ?, ?, 'Disponible', ?)");
+            
+            $fileName = null;
+            
+            // 2. Traitement de l'upload de l'image
+            if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
+                $uploadDir = 'public/uploads/vehicules/';
+                // Créer le dossier s'il n'existe pas
+                if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+                
+                $fileName = time() . '_' . basename($_FILES['photo']['name']);
+                if (move_uploaded_file($_FILES['photo']['tmp_name'], $uploadDir . $fileName)) {
+                    // Upload réussi
+                } else {
+                    $fileName = null; // Échec de l'upload
                 }
             }
+
+            // 3. Exécution avec les données du formulaire
+            $stmt->execute([
+                $_POST['immatriculation'], 
+                $_POST['marque'], 
+                $_POST['modele'], 
+                $fileName
+            ]);
+
             header('Location: ?url=vehicules_liste');
-        } catch (PDOException $e) { die("Erreur : " . $e->getMessage()); }
+        } catch (PDOException $e) { 
+            die("Erreur base de données : " . $e->getMessage()); 
+        }
         exit;
     }
 
